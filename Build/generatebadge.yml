@@ -1,0 +1,37 @@
+variables:
+  solution: "**/*.sln"
+  buildConfiguration: "release"
+  buildPlatform: "any cpu"
+steps:
+  - task: nugetrestore@2
+    inputs:
+      command: restore
+      solution: "$(solution)"
+  - task: VSBuild@1
+    inputs:
+      solution: "$(solution)"
+      configuration: "$(buildConfiguration)"
+      platform: "$(buildPlatform)"
+      clean: "true"      
+      msbuildArchitecture: x86
+      logProjectEvents: false
+      createLogFile: false
+  - task: d8b84976-e99a-4b86-b885-4849694435b0@1
+    inputs:
+      rootFolder: "ReleaseBadge/bin/$(buildConfiguration)/net461/"
+      includeRootFolder: "false"
+      archiveType: "zip"
+      archiveFile: "$(Build.ArtifactStagingDirectory)/function/ReleaseBadge.zip"
+      replaceExistingArchive: "true"
+  - task: 2ff763a7-ce83-4e1f-bc89-0ae63477cebe@1
+    name: ProvisionArtifacts
+    inputs:
+      PathToPublish: "Provision"
+      ArtifactType: Container
+      ArtifactName: "Provision"
+  - task: 2ff763a7-ce83-4e1f-bc89-0ae63477cebe@1
+    name: FunctionArtifacts
+    inputs:
+      PathToPublish: "$(Build.ArtifactStagingDirectory)/function/"
+      ArtifactType: Container
+      ArtifactName: "Function"

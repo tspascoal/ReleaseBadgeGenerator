@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Provision", "Provision", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Consumption", "Consumption", "{32110B68-79CC-462F-AE91-29E7F4483B24}"
 	ProjectSection(SolutionItems) = preProject
-		Provision\Dynamic\azuredeploy.json = Provision\Dynamic\azuredeploy.json
+		Provision\Consumption\azuredeploy.json = Provision\Consumption\azuredeploy.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dedicated", "Dedicated", "{E3024FE3-DAF9-4605-A34C-34165892987B}"

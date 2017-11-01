@@ -15,7 +15,9 @@ Param(
     
 	[string] [Parameter(Mandatory=$true)] $BadgesStorageAccountName,
 	[string] [Parameter(ParameterSetName='RunArmTemplate')] $HostingPlanName,
-	
+
+	[string] [Parameter(Mandatory=$false,ParameterSetName='RunArmTemplate')][AllowEmptyString()] $ApplicationInsightsKey = "",
+
 	[switch] $NoAnonymousAccess,
     [switch] $ValidateOnly,
 
@@ -49,6 +51,11 @@ if ($HostType -ne "") {
 		$extraParameters.Add('sku', $SKU)
 		$extraParameters.Add('workerSize', $WorkerSize)
 	}
+
+	if($ApplicationInsightsKey -ne "") {
+		$extraParameters.Add('applicationInsightsInstrumentationKey', $ApplicationInsightsKey)
+	}
+
 	$TemplateFile = Join-Path $HostType 'azuredeploy.json'
 
 	$TemplateFile = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $TemplateFile))

@@ -69,104 +69,119 @@
         "description": "Name of hosting plan"
       }
     },
-    "applicationInsightsInstrumentationKey": {
+    "applicationInsightsLocation": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Application Insights instrumentation key (optional)"
+        "description": "Location of Application Insights Resource"
       }
     },
-    "variables": {
-      "functionAppName": "[parameters('appName')]",
-      "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'functions')]",
-      "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-      "badgesStorageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('badgesStorageAccountName'))]",
-      "applicationInsightsInstrumentationKey": "[parameters('applicationInsightsInstrumentationKey')]"
+  },
+  "variables": {
+    "functionAppName": "[parameters('appName')]",
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'functions')]",
+    "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+    "badgesStorageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('badgesStorageAccountName'))]",
+    "applicationInsightsName": "[concat('AppInsights', variables('functionAppName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights/components",
+      "kind": "other",
+      "name": "[variables('applicationInsightsName')]",
+      "apiVersion": "2014-04-01",
+      "location": "[parameters('applicationInsightsLocation')]",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "ApplicationId": "[variables('functionAppName')]",
+        "Application_Type": "other"
+      },
+      "dependsOn": []
     },
-    "resources": [
-      {
-        "type": "Microsoft.Storage/storageAccounts",
-        "name": "[variables('storageAccountName')]",
-        "apiVersion": "2016-12-01",
-        "location": "[resourceGroup().location]",
-        "kind": "Storage",
-        "sku": {
-          "name": "[parameters('storageAccountType')]"
-        }
-      },
-      {
-        "type": "Microsoft.Storage/storageAccounts",
-        "name": "[parameters('badgesStorageAccountName')]",
-        "apiVersion": "2016-12-01",
-        "location": "[resourceGroup().location]",
-        "kind": "Storage",
-        "sku": {
-          "name": "[parameters('badgeStorageAccountType')]"
-        }
-      },
-      {
-        "type": "Microsoft.Web/serverfarms",
-        "apiVersion": "2015-04-01",
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "2016-12-01",
+      "location": "[resourceGroup().location]",
+      "kind": "Storage",
+      "sku": {
+        "name": "[parameters('storageAccountType')]"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('badgesStorageAccountName')]",
+      "apiVersion": "2016-12-01",
+      "location": "[resourceGroup().location]",
+      "kind": "Storage",
+      "sku": {
+        "name": "[parameters('badgeStorageAccountType')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2015-04-01",
+      "name": "[parameters('hostingPlanName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
         "name": "[parameters('hostingPlanName')]",
-        "location": "[resourceGroup().location]",
-        "properties": {
-          "name": "[parameters('hostingPlanName')]",
-          "sku": "[parameters('sku')]",
-          "workerSize": "[parameters('workerSize')]",
-          "hostingEnvironment": "",
-          "numberOfWorkers": "[parameters('workerSize')]"
-        }
-      },
-      {
-        "apiVersion": "2015-08-01",
-        "type": "Microsoft.Web/sites",
-        "name": "[variables('functionAppName')]",
-        "location": "[resourceGroup().location]",
-        "kind": "functionapp",
-        "dependsOn": [
-          "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
-          "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-          "[resourceId('Microsoft.Storage/storageAccounts', parameters('badgesStorageAccountName'))]"
-        ],
-        "properties": {
-          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
-          "siteConfig": {
-            "appSettings": [
-              {
-                "name": "AzureWebJobsDashboard",
-                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
-              },
-              {
-                "name": "AzureWebJobsStorage",
-                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
-              },
-              {
-                "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
-              },
-              {
-                "name": "WEBSITE_CONTENTSHARE",
-                "value": "[toLower(variables('functionAppName'))]"
-              },
-              {
-                "name": "FUNCTIONS_EXTENSION_VERSION",
-                "value": "~1"
-              },
-              {
-                "name": "WEBSITE_NODE_DEFAULT_VERSION",
-                "value": "6.5.0"
-              },
-              {
-                "name": "AzureWebJobsBadgesBlob",
-                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('badgesStorageAccountName'), ';AccountKey=', listKeys(variables('badgesStorageAccountid'),'2015-05-01-preview').key1)]"
-              },
-              {
-                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                "value": "[variables('applicationInsightsInstrumentationKey')]"
-              }
-            ]
-          }
+        "sku": "[parameters('sku')]",
+        "workerSize": "[parameters('workerSize')]",
+        "hostingEnvironment": "",
+        "numberOfWorkers": "[parameters('workerSize')]"
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "[variables('functionAppName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "functionapp",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('badgesStorageAccountName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsDashboard",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(variables('functionAppName'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~1"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "6.5.0"
+            },
+            {
+              "name": "AzureWebJobsBadgesBlob",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('badgesStorageAccountName'), ';AccountKey=', listKeys(variables('badgesStorageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2014-04-01').InstrumentationKey]"
+            }
+          ]
         }
       }
-    ]
-  }
+    }
+  ]
+}

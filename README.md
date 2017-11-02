@@ -107,6 +107,7 @@ az account list-locations --output table
 * **BadgeStorageAccountType** The type of storage to be used to store badges (sames value set as **StorageAccountType**)
 * **BadgesStorageAccountName** The name of the badges storage account, this name must be unique (across Azure) and will be used on the URL used to serve the badges. Eg if you choose _mybadges_ as the account name, the badges will be accesible on _ https://mybadges.blob.core.windows.net/badges_
 * **HostingPlanName** (optional) The name of the hosting plan.
+* **ApplicationInsightsLocation** Location of the [Application Insights](https://azure.microsoft.com/en-us/services/application-insights/) resource location. Keep in mind Application Insights is only available in a few regions (East Us, West US2, South Central US, North Europe, West Europe, Southeast Asia). A [Basic](https://azure.microsoft.com/en-us/pricing/details/application-insights/) will be setup (basic has no costs unless the 1 GB per month data cap is exceeded)
 * **NoAnonymousAccess** Don't set badges storage container access level as anonynmous (only people with a token will be able to see the badges)
 * **ValidateOnly** Only validates the changes, doesn't perform any.
 

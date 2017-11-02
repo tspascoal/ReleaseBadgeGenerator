@@ -44,11 +44,11 @@
         "description": "Name of hosting plan"
       }
     },
-    "applicationInsightsInstrumentationKey": {
+    "applicationInsightsLocation": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Application Insights instrumentation key (optional)"
+        "description": "Location of Application Insights Resource"
       }
     }
   },
@@ -57,9 +57,23 @@
     "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'functions')]",
     "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
     "badgesStorageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('badgesStorageAccountName'))]",
-    "applicationInsightsInstrumentationKey": "[parameters('applicationInsightsInstrumentationKey')]"
+    "applicationInsightsName": "[concat('AppInsights', variables('functionAppName'))]"
   },
   "resources": [
+    {
+      "type": "Microsoft.Insights/components",
+      "kind": "other",
+      "name": "[variables('applicationInsightsName')]",
+      "apiVersion": "2014-04-01",
+      "location": "[parameters('applicationInsightsLocation')]",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "ApplicationId": "[variables('functionAppName')]",
+        "Application_Type": "other"
+      },
+      "dependsOn": []
+    },
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('storageAccountName')]",
@@ -100,7 +114,8 @@
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('badgesStorageAccountName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('badgesStorageAccountName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
@@ -136,11 +151,17 @@
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[variables('applicationInsightsInstrumentationKey')]"
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2014-04-01').InstrumentationKey]"
             }
           ]
         }
       }
     }
-  ]
+  ],
+  "outputs": {
+    "InstrumentationKey": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2014-04-01').InstrumentationKey]"
+    }
+  }
 }

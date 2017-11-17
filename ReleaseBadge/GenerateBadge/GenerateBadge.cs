@@ -60,7 +60,7 @@ namespace ReleaseBadge
 
             log.Info($"going to generate badge with name {badgeFileName}");
 
-            var blobUri = await WriteBadgeToStorage(eventHelper, parameterHelper, binder, badgeFileName);
+            var blobUri = await WriteBadgeToStorage(eventHelper, parameterHelper, binder, badgeFileName, parameterHelper.GetFileType());
 
             log.Info($"badge stored on {blobUri}");
 
@@ -94,7 +94,7 @@ namespace ReleaseBadge
         /// <param name="binder"></param>
         /// <param name="badgeFileName"></param>
         /// <returns>the uri of the blob the badge was written to</returns>
-        private static async Task<string> WriteBadgeToStorage(DeploymentCompletedEventHelper helper, ConfigurationHelper configurationHelper, Binder binder, string badgeFileName)
+        private static async Task<string> WriteBadgeToStorage(DeploymentCompletedEventHelper helper, ConfigurationHelper configurationHelper, Binder binder, string badgeFileName, string contentType)
         {
             var generator = new ShieldsIOBadgeGenerator();
 
@@ -117,6 +117,7 @@ namespace ReleaseBadge
             CloudBlockBlob cloudBlob = await binder.BindAsync<CloudBlockBlob>(attributes);
 
             cloudBlob.Properties.CacheControl = $"public, max-age={maxAge}";
+            cloudBlob.Properties.ContentType = (contentType == "svg") ? $"image/{contentType}+xml" : $"image/{contentType}";
 
             await cloudBlob.UploadFromByteArrayAsync(badgeContent, 0, badgeContent.Length);
 

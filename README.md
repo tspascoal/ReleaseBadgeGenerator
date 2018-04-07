@@ -19,6 +19,10 @@ The service requires NO access to a VSTS account it merely generates the badge w
 
 > This function is implemented in C# but it could be as easily implemented in JavaScript or [Java](https://docs.microsoft.com/en-us/azure/azure-functions/functions-create-first-java-maven)
 
+## VSTS Built in support for badges
+
+Since [sprint 131 (March 5)](https://docs.microsoft.com/en-us/vsts/release-notes/2018/mar-05-vsts#share-deployment-status-using-a-badge) VSTS has built in support for release badges, so this code now serves more as a learning experience than anything else (unless you have extra requirements)
+
 ## Badge styles
 
 The badge can have three different colors depending on the status (by default only sucessfull deploys generate a badge)
